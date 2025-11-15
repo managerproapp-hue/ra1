@@ -136,10 +136,32 @@ const GestionAppView: React.FC = () => {
     
     const backupOptions = [
         'students', 'practiceGroups', 'services', 'serviceEvaluations', 'serviceRoles', 'entryExitRecords', 
-        'academicGrades', 'courseGrades', 'practicalExamEvaluations', 
+        'academicGrades', 'courseGrades', 'practicalExamEvaluations', 'optativoExams', 'optativoGrades',
         'resultadosAprendizaje', 'criteriosEvaluacion', 'instrumentosEvaluacion', 'profesores', 'unidadesTrabajo',
         'teacher-app-data', 'institute-app-data', 'trimester-dates'
     ];
+
+    const backupOptionLabels: Record<string, string> = {
+        'students': 'Alumnos',
+        'practiceGroups': 'Grupos de Práctica',
+        'services': 'Servicios',
+        'serviceEvaluations': 'Evaluaciones de Servicio',
+        'serviceRoles': 'Roles de Servicio',
+        'entryExitRecords': 'Salidas/Entradas',
+        'academicGrades': 'Notas Académicas',
+        'courseGrades': 'Notas Otros Módulos',
+        'practicalExamEvaluations': 'Exámenes Prácticos',
+        'optativoExams': 'Exámenes Optativo',
+        'optativoGrades': 'Notas Optativo',
+        'resultadosAprendizaje': 'Resultados Aprendizaje',
+        'criteriosEvaluacion': 'Criterios Evaluación',
+        'instrumentosEvaluacion': 'Instrumentos',
+        'profesores': 'Profesores',
+        'unidadesTrabajo': 'Unidades de Trabajo',
+        'teacher-app-data': 'Datos del Profesor',
+        'institute-app-data': 'Datos del Instituto',
+        'trimester-dates': 'Fechas Trimestres'
+    };
     
     const [backupKeys, setBackupKeys] = useState<string[]>(backupOptions);
     
@@ -436,7 +458,7 @@ const GestionAppView: React.FC = () => {
                                     {backupOptions.map(key => (
                                         <label key={key} className="flex items-center">
                                             <input type="checkbox" checked={backupKeys.includes(key)} onChange={() => toggleBackupKey(key)} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                                            <span className="ml-2">{key}</span>
+                                            <span className="ml-2">{backupOptionLabels[key] || key}</span>
                                         </label>
                                     ))}
                                 </div>
@@ -479,9 +501,13 @@ const GestionAppView: React.FC = () => {
                 isOpen={isRestoreModalOpen}
                 onClose={() => setIsRestoreModalOpen(false)}
                 onConfirm={executeRestore}
-                availableKeys={backupData ? Object.keys(backupData) : []}
-                selectedKeys={restoreKeys}
-                onKeyToggle={handleToggleRestoreKey}
+                availableKeys={backupData ? Object.keys(backupData).map((k: string) => backupOptionLabels[k] ?? k) : []}
+                selectedKeys={new Set(Array.from(restoreKeys).map((k: string) => backupOptionLabels[k] ?? k))}
+                onKeyToggle={(label: string) => {
+                    // FIX: Explicitly type `k` to resolve potential type inference issues with indexing.
+                    const key = Object.keys(backupOptionLabels).find((k: string) => backupOptionLabels[k] === label) ?? label;
+                    handleToggleRestoreKey(key);
+                }}
                 onSelectAll={handleSelectAllRestoreKeys}
             />
 

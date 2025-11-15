@@ -142,9 +142,9 @@ const GestionAcademicaView: React.FC = () => {
                         {Object.entries(finalGradesAndAverages.studentGroups).map(([groupName, studentsInGroup]: [string, Student[]]) => (
                             <React.Fragment key={groupName}>
                                 <tr><td colSpan={100} className="bg-gray-200 font-bold p-1 text-left pl-4">{groupName}</td></tr>
-                                {studentsInGroup.map(student => (
-                                    <tr key={student.id} className="hover:bg-gray-50 group">
-                                        <td className="p-1 border text-left font-semibold text-gray-800 w-48 sticky left-0 bg-white group-hover:bg-gray-50">{`${student.apellido1} ${student.apellido2}, ${student.nombre}`}</td>
+                                {studentsInGroup.map((student, index) => (
+                                    <tr key={student.id} className={`group hover:bg-yellow-50 ${index % 2 !== 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                                        <td className={`p-1 border text-left font-semibold text-gray-800 w-48 sticky left-0 group-hover:bg-yellow-50 ${index % 2 !== 0 ? 'bg-gray-50' : 'bg-white'}`}>{`${student.apellido1} ${student.apellido2}, ${student.nombre}`}</td>
                                         {ACADEMIC_EVALUATION_STRUCTURE.periods.flatMap(period => {
                                             const studentAverage = finalGradesAndAverages.studentGrades[student.id].averages[period.key];
                                             return [
@@ -204,9 +204,9 @@ const GestionAcademicaView: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                         {students.map(student => (
-                            <tr key={student.id} className="hover:bg-gray-50 group">
-                                <td className="p-1 border text-left font-semibold text-gray-800">{`${student.apellido1} ${student.apellido2}, ${student.nombre}`}</td>
+                         {students.map((student, index) => (
+                            <tr key={student.id} className={`group ${index % 2 !== 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-yellow-50`}>
+                                <td className={`p-1 border text-left font-semibold text-gray-800 sticky left-0 group-hover:bg-yellow-50 ${index % 2 !== 0 ? 'bg-gray-50' : 'bg-white'}`}>{`${student.apellido1} ${student.apellido2}, ${student.nombre}`}</td>
                                 {COURSE_MODULES.map(module => {
                                     const isSostenibilidad = module.name === 'Sostenibilidad aplicada al sistema productivo';
                                     const studentCourseGrades = localCourseGrades[student.id] || {};

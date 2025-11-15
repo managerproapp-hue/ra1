@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Service, ServiceEvaluation, Student, PracticeGroup, EntryExitRecord, PreServiceDayEvaluation, ServiceDayIndividualScores, Agrupacion, PreServiceIndividualEvaluation } from '../types';
 import { PRE_SERVICE_BEHAVIOR_ITEMS, BEHAVIOR_RATING_MAP, GROUP_EVALUATION_ITEMS, INDIVIDUAL_EVALUATION_ITEMS } from '../data/constants';
@@ -314,11 +315,14 @@ const ServiceEvaluationView: React.FC<ServiceEvaluationViewProps> = ({ service, 
             return recDate >= weekStart && recDate <= weekEnd;
         });
 
-        return relevantRecords.reduce((acc, rec) => {
-            if (!acc[rec.studentId]) acc[rec.studentId] = [];
+        // FIX: Explicitly type the accumulator in the reduce function to resolve "Type 'unknown' cannot be used as an index type" error.
+        return relevantRecords.reduce((acc: Record<string, EntryExitRecord[]>, rec) => {
+            if (!acc[rec.studentId]) {
+                acc[rec.studentId] = [];
+            }
             acc[rec.studentId].push(rec);
             return acc;
-        }, {} as Record<string, EntryExitRecord[]>);
+        }, {});
 
     }, [service.date, entryExitRecords]);
 

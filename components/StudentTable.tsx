@@ -20,12 +20,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onViewStudent }) 
             </tr>
           </thead>
           <tbody>
-            {students.map(student => {
+            {students.map((student, index) => {
               const { raProgress, ...studentData } = student;
               const fullName = `${studentData.apellido1} ${studentData.apellido2}, ${studentData.nombre}`.trim();
+              const isEven = index % 2 === 0;
+              const trBg = isEven ? 'bg-white' : 'bg-gray-50';
+              const tdBg = isEven ? 'bg-gray-50' : 'bg-gray-100';
               return (
                 <React.Fragment key={student.id}>
-                  <tr className="bg-white border-t hover:bg-gray-50">
+                  <tr className={`${trBg} border-t hover:bg-blue-50`}>
                     <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
                       <div className="flex items-center">
                         <img 
@@ -42,8 +45,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onViewStudent }) 
                       <button onClick={() => onViewStudent(studentData)} className="font-medium text-blue-600 hover:underline">Ver Ficha</button>
                     </td>
                   </tr>
-                  <tr className="bg-white border-b">
-                    <td colSpan={4} className="p-4 bg-gray-50">
+                  <tr className={`${trBg} border-b`}>
+                    <td colSpan={4} className={`p-4 ${tdBg}`}>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-4">
                             {raProgress.map(ra => {
                                 const percentage = ra.grade !== null ? (ra.grade / 10) * 100 : 0;

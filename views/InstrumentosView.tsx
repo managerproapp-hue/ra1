@@ -192,9 +192,9 @@ const GradesMatrix: React.FC<{
                     </tr>
                 </thead>
                 <tbody>
-                    {sortedStudents.map(student => (
-                        <tr key={student.id} className="hover:bg-gray-100 group">
-                            <td className="p-2 border text-left font-medium text-gray-800 w-48 sticky left-0 bg-white group-hover:bg-gray-100">{`${student.apellido1} ${student.apellido2}, ${student.nombre}`}</td>
+                    {sortedStudents.map((student, index) => (
+                        <tr key={student.id} className={`group ${index % 2 !== 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-gray-100`}>
+                            <td className={`p-2 border text-left font-medium text-gray-800 w-48 sticky left-0 group-hover:bg-gray-100 ${index % 2 !== 0 ? 'bg-gray-50' : 'bg-white'}`}>{`${student.apellido1} ${student.apellido2}, ${student.nombre}`}</td>
                             {instrument.activities.map(act => {
                                 const grade = getGradeForActivity(student.id, act, academicGrades, calculatedGrades);
                                 return (

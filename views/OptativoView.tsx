@@ -104,12 +104,12 @@ const OptativoView: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {sortedStudents.map(student => {
+                        {sortedStudents.map((student, index) => {
                             const avgT1 = calculateAverage(student.id, examsT1);
                             const avgT2 = calculateAverage(student.id, examsT2);
                             return (
-                                <tr key={student.id} className="hover:bg-gray-50 group">
-                                    <td className="p-1 border text-left font-semibold text-gray-800 w-48 sticky left-0 bg-white group-hover:bg-gray-50">{`${student.apellido1} ${student.apellido2}, ${student.nombre}`}</td>
+                                <tr key={student.id} className={`group hover:bg-yellow-50 ${index % 2 !== 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                                    <td className={`p-1 border text-left font-semibold text-gray-800 w-48 sticky left-0 group-hover:bg-yellow-50 ${index % 2 !== 0 ? 'bg-gray-50' : 'bg-white'}`}>{`${student.apellido1} ${student.apellido2}, ${student.nombre}`}</td>
                                     {examsT1.map(exam => (
                                         <td key={exam.id} className="border">
                                             <input type="number" step="0.1" min="0" max="10" value={optativoGrades[student.id]?.[exam.id] ?? ''} onChange={e => handleGradeChange(student.id, exam.id, e.target.value)} className="w-20 p-1.5 text-center bg-transparent focus:bg-yellow-100 outline-none"/>

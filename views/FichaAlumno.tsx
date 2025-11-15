@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Student, TimelineEvent, PreServiceDayEvaluation, ResultadoAprendizaje, Service, CourseModuleGrades, GradeValue } from '../types';
 import { 
@@ -129,6 +130,8 @@ const FichaAlumno: React.FC<FichaAlumnoProps> = ({ student, onBack, onUpdatePhot
     practiceGroups,
     serviceEvaluations,
     entryExitRecords: allEntryExitRecords,
+    optativoExams, 
+    optativoGrades
   } = useAppContext();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -146,6 +149,20 @@ const FichaAlumno: React.FC<FichaAlumnoProps> = ({ student, onBack, onUpdatePhot
     [allEntryExitRecords, student.id]
   );
   
+  const sostenibilidadAverages = useMemo(() => {
+    const examsT1 = optativoExams.filter(e => e.trimester === 't1');
+    const examsT2 = optativoExams.filter(e => e.trimester === 't2');
+    const studentGrades = optativoGrades[student.id] || {};
+
+    const gradesT1 = examsT1.map(e => studentGrades[e.id]).filter(g => g !== null && g !== undefined) as number[];
+    const avgT1 = gradesT1.length > 0 ? gradesT1.reduce((sum, g) => sum + g, 0) / gradesT1.length : null;
+
+    const gradesT2 = examsT2.map(e => studentGrades[e.id]).filter(g => g !== null && g !== undefined) as number[];
+    const avgT2 = gradesT2.length > 0 ? gradesT2.reduce((sum, g) => sum + g, 0) / gradesT2.length : null;
+
+    return { t1: avgT1, t2: avgT2 };
+  }, [student.id, optativoExams, optativoGrades]);
+
   const timelineEvents = useMemo(() => {
     const events: TimelineEvent[] = [];
     const parseDate = (dateStr: string) => {
@@ -380,7 +397,7 @@ const FichaAlumno: React.FC<FichaAlumnoProps> = ({ student, onBack, onUpdatePhot
                     <div className="overflow-x-auto">
                         <table className="min-w-full text-sm text-center">
                              <thead className="bg-gray-50 text-xs text-gray-600 uppercase"><tr><th className="px-4 py-3 text-left">Calificación</th>{ACADEMIC_EVALUATION_STRUCTURE.periods.map(p => <th key={p.key} className="px-4 py-3">{p.name}</th>)}</tr></thead>
-                             <tbody className="divide-y divide-gray-200">
+                             <tbody className="[&>tr:nth-child(even)]:bg-gray-50">
                                 {ACADEMIC_EVALUATION_STRUCTURE.periods[0].instruments.map(instrument => {
                                     return (
                                     <tr key={instrument.key}>
@@ -420,14 +437,34 @@ const FichaAlumno: React.FC<FichaAlumnoProps> = ({ student, onBack, onUpdatePhot
                      <div className="overflow-x-auto">
                            <table className="min-w-full text-sm text-center">
                                 <thead className="bg-gray-50 text-xs text-gray-600 uppercase"><tr><th className="px-4 py-3 text-left">Módulo</th><th>T1</th><th>T2</th><th>T3</th><th>REC</th><th className="px-4 py-3">Media Final</th></tr></thead>
-                                <tbody className="divide-y divide-gray-200">
+                                <tbody className="[&>tr:nth-child(even)]:bg-gray-50">
                                     {COURSE_MODULES.map(mod => {
-                                        const grades: Partial<CourseModuleGrades> = allCourseGrades[student.id]?.[mod] || {};
-                                        const validGrades = ([grades.t1, grades.t2, grades.t3] as (GradeValue | undefined)[]).map(g => parseFloat(String(g))).filter(g => !isNaN(g));
+                                        const isSostenibilidad = mod.name === 'Sostenibilidad aplicada al sistema productivo';
+                                        
+                                        const grades = isSostenibilidad 
+                                            ? sostenibilidadAverages 
+                                            : (allCourseGrades[student.id]?.[mod.name] || {});
+
+                                        const validGrades = ([
+                                            grades.t1, 
+                                            grades.t2, 
+                                            mod.trimesters === 3 ? (grades as any).t3 : undefined
+                                        ] as (GradeValue | undefined)[])
+                                            .map(g => g !== null && g !== undefined ? parseFloat(String(g)) : NaN)
+                                            .filter(g => !isNaN(g));
+                                        
                                         const finalAvg = validGrades.length > 0 ? (validGrades.reduce((a, b) => a + b, 0) / validGrades.length) : null;
+
                                         return (
-                                            <tr key={mod}><td className="px-4 py-2 text-left font-medium">{mod}</td><td>{grades.t1 ?? '-'}</td><td>{grades.t2 ?? '-'}</td><td>{grades.t3 ?? '-'}</td><td>{grades.rec ?? '-'}</td><td className={`font-bold bg-gray-50 ${finalAvg !== null && finalAvg < 5 ? 'text-red-600' : ''}`}>{finalAvg?.toFixed(2) ?? '-'}</td></tr>
-                                        )
+                                            <tr key={mod.name}>
+                                                <td className="px-4 py-2 text-left font-medium">{mod.name}</td>
+                                                <td>{grades.t1 !== null && grades.t1 !== undefined ? grades.t1.toFixed(2) : '-'}</td>
+                                                <td>{grades.t2 !== null && grades.t2 !== undefined ? grades.t2.toFixed(2) : '-'}</td>
+                                                <td>{mod.trimesters === 3 ? ((grades as any).t3 ?? '-') : <span className="text-gray-400">N/A</span>}</td>
+                                                <td>{(grades as any).rec ?? '-'}</td>
+                                                <td className={`font-bold ${finalAvg !== null && finalAvg < 5 ? 'text-red-600' : ''}`}>{finalAvg?.toFixed(2) ?? '-'}</td>
+                                            </tr>
+                                        );
                                     })}
                                 </tbody>
                             </table>
@@ -464,7 +501,7 @@ const FichaAlumno: React.FC<FichaAlumnoProps> = ({ student, onBack, onUpdatePhot
                         <div className="overflow-x-auto">
                             <table className="min-w-full text-sm">
                                 <thead className="bg-gray-100"><tr><th className="p-2 text-left">Servicio</th><th className="p-2">Fecha</th><th className="p-2">Grupo/Agrupación</th><th className="p-2">Nota Ind.</th><th className="p-2">Nota Grupal</th><th className="p-2">Nota Final</th><th className="p-2 text-left">Observaciones</th></tr></thead>
-                                <tbody className="divide-y">
+                                <tbody className="[&>tr:nth-child(even)]:bg-gray-50">
                                     {studentServicesData.map(data => (
                                         <tr key={data.service.id}>
                                             <td className="p-2 font-semibold">{data.service.name}</td>

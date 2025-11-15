@@ -179,11 +179,11 @@ const NotasServicioView: React.FC<NotasServicioViewProps> = ({ onNavigateToServi
                             {Object.entries(studentData.studentGroups).map(([groupName, studentsInGroup]: [string, Student[]]) => (
                                 <React.Fragment key={groupName}>
                                     <tr><td colSpan={sortedServices.length + 4} className="bg-gray-200 font-bold p-1 text-left pl-4">{groupName}</td></tr>
-                                    {studentsInGroup.map(student => {
+                                    {studentsInGroup.map((student, index) => {
                                         const { serviceScores, averages } = studentData.getScores(student);
                                         return (
-                                        <tr key={student.id} className="hover:bg-gray-50 group">
-                                            <td className="p-1 border text-left font-semibold text-gray-800 w-48 sticky left-0 bg-white group-hover:bg-gray-50">{`${student.apellido1} ${student.apellido2}, ${student.nombre}`}</td>
+                                        <tr key={student.id} className={`group ${index % 2 !== 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-blue-50`}>
+                                            <td className={`p-1 border text-left font-semibold text-gray-800 w-48 sticky left-0 group-hover:bg-blue-50 ${index % 2 !== 0 ? 'bg-gray-50' : 'bg-white'}`}>{`${student.apellido1} ${student.apellido2}, ${student.nombre}`}</td>
                                             {sortedServices.map(service => {
                                                 const scores = serviceScores[service.id];
                                                 const finalScore = (scores && !scores.absent) ? ((scores.individual ?? 0) + (scores.group ?? 0)) / 2 : null;
