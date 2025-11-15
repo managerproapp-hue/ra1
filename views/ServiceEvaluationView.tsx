@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Service, ServiceEvaluation, Student, PracticeGroup, EntryExitRecord, PreServiceDayEvaluation, ServiceDayIndividualScores, Agrupacion, PreServiceIndividualEvaluation } from '../types';
 import { PRE_SERVICE_BEHAVIOR_ITEMS, BEHAVIOR_RATING_MAP, GROUP_EVALUATION_ITEMS, INDIVIDUAL_EVALUATION_ITEMS } from '../data/constants';
@@ -40,12 +41,12 @@ const PreServiceIndividualTable: React.FC<{
                     </tr>
                 </thead>
                 <tbody>
-                    {['attendance', 'hasFichas', 'hasUniforme', 'hasMaterial'].map(field => (
+                    {/* FIX: Corrected type assertion for accessing object property */}
+                    {(['attendance', 'hasFichas', 'hasUniforme', 'hasMaterial'] as const).map(field => (
                         <tr key={field}>
                             <td className="p-2 border font-medium capitalize text-left">{field === 'attendance' ? 'Asistencia' : field.replace('has', '')}</td>
                             {studentsInGroup.map(s => {
-                                // FIX: Corrected type assertion for accessing object property
-                                const isChecked = evaluationData?.individualEvaluations[s.id]?.[field as keyof PreServiceIndividualEvaluation] ?? (field === 'attendance');
+                                const isChecked = evaluationData?.individualEvaluations[s.id]?.[field] ?? (field === 'attendance');
                                 return (
                                 <td key={s.id} className="p-2 border text-center">
                                     <input type="checkbox" checked={isChecked} onChange={e => onUpdate(s.id, field, e.target.checked)} className="h-4 w-4" disabled={isLocked} />

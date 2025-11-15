@@ -3,7 +3,8 @@ import {
     Student, PracticeGroup, Service, ServiceEvaluation, ServiceRole, EntryExitRecord, 
     AcademicGrades, CourseGrades, PracticalExamEvaluation, TeacherData, InstituteData, Toast, ToastType, StudentCalculatedGrades, TrimesterDates,
     ResultadoAprendizaje, CriterioEvaluacion, InstrumentoEvaluacion, Profesor, UnidadTrabajo,
-    AsociacionCriterio
+    AsociacionCriterio,
+    OptativoExam, OptativoGrades
 } from '../types';
 import { parseFile } from '../services/csvParser';
 import { SERVICE_GRADE_WEIGHTS } from '../data/constants';
@@ -95,6 +96,12 @@ interface AppContextType {
     unidadesTrabajo: Record<string, UnidadTrabajo>;
     setUnidadesTrabajo: React.Dispatch<React.SetStateAction<Record<string, UnidadTrabajo>>>;
 
+    // Optativo module
+    optativoExams: OptativoExam[];
+    setOptativoExams: React.Dispatch<React.SetStateAction<OptativoExam[]>>;
+    optativoGrades: OptativoGrades;
+    setOptativoGrades: React.Dispatch<React.SetStateAction<OptativoGrades>>;
+
     toasts: Toast[];
     addToast: (message: string, type?: ToastType) => void;
     
@@ -147,6 +154,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [academicGrades, setAcademicGrades] = useLocalStorage<AcademicGrades>('academicGrades', {});
     const [courseGrades, setCourseGrades] = useLocalStorage<CourseGrades>('courseGrades', {});
     const [practicalExamEvaluations, setPracticalExamEvaluations] = useLocalStorage<PracticalExamEvaluation[]>('practicalExamEvaluations', []);
+    const [optativoExams, setOptativoExams] = useLocalStorage<OptativoExam[]>('optativoExams', []);
+    const [optativoGrades, setOptativoGrades] = useLocalStorage<OptativoGrades>('optativoGrades', {});
     
     // App Config States
     const [teacherData, setTeacherData] = useLocalStorage<TeacherData>('teacher-app-data', {
@@ -443,6 +452,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const value: AppContextType = {
         students, setStudents, practiceGroups, setPracticeGroups, services, setServices, serviceEvaluations, setServiceEvaluations, serviceRoles, setServiceRoles, entryExitRecords, setEntryExitRecords, academicGrades, setAcademicGrades, courseGrades, setCourseGrades, practicalExamEvaluations, setPracticalExamEvaluations, teacherData, setTeacherData, instituteData, setInstituteData, trimesterDates, setTrimesterDates,
         resultadosAprendizaje, setResultadosAprendizaje, criteriosEvaluacion, setCriteriosEvaluacion, instrumentosEvaluacion, setInstrumentosEvaluacion, profesores, setProfesores, unidadesTrabajo, setUnidadesTrabajo,
+        optativoExams, setOptativoExams, optativoGrades, setOptativoGrades,
         toasts, addToast,
         handleFileUpload, handleUpdateStudent,
         handleCreateService, handleSaveServiceAndEvaluation, handleDeleteService, onDeleteRole, handleDeleteInstrumento, handleSaveEntryExitRecord, handleSavePracticalExam,
