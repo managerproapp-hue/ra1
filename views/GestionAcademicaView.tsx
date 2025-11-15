@@ -89,6 +89,27 @@ const GestionAcademicaView: React.FC = () => {
         setIsDirty(true);
     };
 
+    const handleToggleConvalidation = (studentId: string, moduleName: string) => {
+        setLocalCourseGrades(prev => {
+            const newGrades = JSON.parse(JSON.stringify(prev));
+            if (!newGrades[studentId]) newGrades[studentId] = {};
+            if (!newGrades[studentId][moduleName]) newGrades[studentId][moduleName] = {};
+
+            const currentStatus = newGrades[studentId][moduleName].isConvalidated || false;
+            newGrades[studentId][moduleName].isConvalidated = !currentStatus;
+
+            if (!currentStatus) { // Si se está convalidando, limpiar notas
+                newGrades[studentId][moduleName].t1 = null;
+                newGrades[studentId][moduleName].t2 = null;
+                newGrades[studentId][moduleName].t3 = null;
+                newGrades[studentId][moduleName].rec = null;
+            }
+
+            return newGrades;
+        });
+        setIsDirty(true);
+    };
+
     const handleSaveChanges = () => {
         setAcademicGrades(localAcademicGrades);
         setCourseGrades(localCourseGrades);
@@ -190,7 +211,7 @@ const GestionAcademicaView: React.FC = () => {
                      <thead className="bg-gray-100">
                         <tr>
                             <th className="p-2 border font-semibold text-gray-600 text-left">Alumno</th>
-                            {COURSE_MODULES.map(module => <th key={module.name} colSpan={module.trimesters + 2} className="p-2 border font-semibold text-gray-600">{module.name}</th>)}
+                            {COURSE_MODULES.map(module => <th key={module.name} colSpan={module.trimesters + 3} className="p-2 border font-semibold text-gray-600">{module.name}</th>)}
                         </tr>
                          <tr>
                             <th className="p-2 border font-semibold text-gray-600 text-left"></th>
@@ -199,7 +220,8 @@ const GestionAcademicaView: React.FC = () => {
                                 <th key={`${module.name}-t2`} className="p-2 border font-semibold text-gray-500 text-[10px]">T2</th>,
                                 ...(module.trimesters === 3 ? [<th key={`${module.name}-t3`} className="p-2 border font-semibold text-gray-500 text-[10px]">T3</th>] : []),
                                 <th key={`${module.name}-rec`} className="p-2 border font-semibold text-gray-500 text-[10px]">REC</th>,
-                                <th key={`${module.name}-final`} className="p-2 border font-bold text-gray-700 bg-gray-200">FINAL</th>
+                                <th key={`${module.name}-final`} className="p-2 border font-bold text-gray-700 bg-gray-200">FINAL</th>,
+                                <th key={`${module.name}-action`} className="p-2 border font-semibold text-gray-500 text-[10px]">Acción</th>,
                             ])}
                         </tr>
                     </thead>
@@ -210,6 +232,7 @@ const GestionAcademicaView: React.FC = () => {
                                 {COURSE_MODULES.map(module => {
                                     const isSostenibilidad = module.name === 'Sostenibilidad aplicada al sistema productivo';
                                     const studentCourseGrades = localCourseGrades[student.id] || {};
+                                    const isConvalidated = studentCourseGrades[module.name]?.isConvalidated;
                                     
                                     const grades = isSostenibilidad 
                                         ? sostenibilidadAverages[student.id]
@@ -223,29 +246,29 @@ const GestionAcademicaView: React.FC = () => {
 
                                     return (
                                         <React.Fragment key={module.name}>
-                                            <td className="border">
-                                                {isSostenibilidad ? (
-                                                    <span className="p-1.5 block">{grades.t1?.toFixed(2) ?? '-'}</span>
-                                                ) : (
-                                                    <input type="number" step="0.1" min="0" max="10" value={(grades as CourseModuleGrades).t1 ?? ''} onChange={e => handleCourseGradeChange(student.id, module.name, 't1', e.target.value)} className="w-16 p-1.5 text-center bg-transparent focus:bg-yellow-100 outline-none" />
-                                                )}
-                                            </td>
-                                            <td className="border">
-                                                 {isSostenibilidad ? (
-                                                    <span className="p-1.5 block">{grades.t2?.toFixed(2) ?? '-'}</span>
-                                                ) : (
-                                                    <input type="number" step="0.1" min="0" max="10" value={(grades as CourseModuleGrades).t2 ?? ''} onChange={e => handleCourseGradeChange(student.id, module.name, 't2', e.target.value)} className="w-16 p-1.5 text-center bg-transparent focus:bg-yellow-100 outline-none" />
-                                                )}
-                                            </td>
-                                            {module.trimesters === 3 && (
-                                                <td className="border">
-                                                    <input type="number" step="0.1" min="0" max="10" value={(grades as CourseModuleGrades).t3 ?? ''} onChange={e => handleCourseGradeChange(student.id, module.name, 't3', e.target.value)} className="w-16 p-1.5 text-center bg-transparent focus:bg-yellow-100 outline-none" />
-                                                </td>
+                                            {isConvalidated ? (
+                                                <>
+                                                    <td colSpan={module.trimesters + 2} className="border text-center font-bold text-green-600 bg-green-50">CONVALIDADA</td>
+                                                    <td className="border text-center"><button onClick={() => handleToggleConvalidation(student.id, module.name)} className="text-xs text-gray-500 hover:text-red-600 p-1">Anular</button></td>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <td className="border">
+                                                        {isSostenibilidad ? (<span className="p-1.5 block">{grades.t1?.toFixed(2) ?? '-'}</span>) : (<input type="number" step="0.1" min="0" max="10" value={(grades as CourseModuleGrades).t1 ?? ''} onChange={e => handleCourseGradeChange(student.id, module.name, 't1', e.target.value)} className="w-16 p-1.5 text-center bg-transparent focus:bg-yellow-100 outline-none" />)}
+                                                    </td>
+                                                    <td className="border">
+                                                        {isSostenibilidad ? (<span className="p-1.5 block">{grades.t2?.toFixed(2) ?? '-'}</span>) : (<input type="number" step="0.1" min="0" max="10" value={(grades as CourseModuleGrades).t2 ?? ''} onChange={e => handleCourseGradeChange(student.id, module.name, 't2', e.target.value)} className="w-16 p-1.5 text-center bg-transparent focus:bg-yellow-100 outline-none" />)}
+                                                    </td>
+                                                    {module.trimesters === 3 && (<td className="border"><input type="number" step="0.1" min="0" max="10" value={(grades as CourseModuleGrades).t3 ?? ''} onChange={e => handleCourseGradeChange(student.id, module.name, 't3', e.target.value)} className="w-16 p-1.5 text-center bg-transparent focus:bg-yellow-100 outline-none" /></td>)}
+                                                    <td className="border"><input type="number" step="0.1" min="0" max="10" value={(grades as CourseModuleGrades).rec ?? ''} onChange={e => handleCourseGradeChange(student.id, module.name, 'rec', e.target.value)} className="w-16 p-1.5 text-center bg-transparent focus:bg-yellow-100 outline-none" /></td>
+                                                    <td className={`p-1.5 border font-bold ${finalAvg !== null && finalAvg < 5 ? 'text-red-600' : 'text-black'} bg-gray-200`}>{finalAvg?.toFixed(2) ?? '-'}</td>
+                                                    <td className="border text-center">
+                                                        {!isSostenibilidad && (
+                                                            <button onClick={() => handleToggleConvalidation(student.id, module.name)} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200">Convalidar</button>
+                                                        )}
+                                                    </td>
+                                                </>
                                             )}
-                                            <td className="border">
-                                                <input type="number" step="0.1" min="0" max="10" value={(grades as CourseModuleGrades).rec ?? ''} onChange={e => handleCourseGradeChange(student.id, module.name, 'rec', e.target.value)} className="w-16 p-1.5 text-center bg-transparent focus:bg-yellow-100 outline-none" />
-                                            </td>
-                                            <td className={`p-1.5 border font-bold ${finalAvg !== null && finalAvg < 5 ? 'text-red-600' : 'text-black'} bg-gray-200`}>{finalAvg?.toFixed(2) ?? '-'}</td>
                                         </React.Fragment>
                                     );
                                 })}

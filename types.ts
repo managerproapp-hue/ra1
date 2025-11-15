@@ -183,6 +183,7 @@ export interface CourseModuleGrades {
     t2: GradeValue;
     t3?: GradeValue;
     rec: GradeValue;
+    isConvalidated?: boolean;
 }
 
 export interface StudentCourseGrades {

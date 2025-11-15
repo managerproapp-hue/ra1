@@ -126,12 +126,14 @@ const FichaAlumno: React.FC<FichaAlumnoProps> = ({ student, onBack, onUpdatePhot
     academicGrades: allAcademicGrades,
     calculatedStudentGrades: allCalculatedGrades,
     courseGrades: allCourseGrades,
+    setCourseGrades,
     services,
     practiceGroups,
     serviceEvaluations,
     entryExitRecords: allEntryExitRecords,
     optativoExams, 
-    optativoGrades
+    optativoGrades,
+    addToast
   } = useAppContext();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -235,6 +237,27 @@ const FichaAlumno: React.FC<FichaAlumnoProps> = ({ student, onBack, onUpdatePhot
           teacherData,
           instituteData
       );
+  };
+
+  const handleToggleConvalidation = (moduleName: string) => {
+    setCourseGrades(prev => {
+        const newGrades = JSON.parse(JSON.stringify(prev));
+        if (!newGrades[student.id]) newGrades[student.id] = {};
+        if (!newGrades[student.id][moduleName]) newGrades[student.id][moduleName] = {};
+
+        const currentStatus = newGrades[student.id][moduleName].isConvalidated || false;
+        newGrades[student.id][moduleName].isConvalidated = !currentStatus;
+
+        if (!currentStatus) { // Si se está convalidando, limpiar notas
+            newGrades[student.id][moduleName].t1 = null;
+            newGrades[student.id][moduleName].t2 = null;
+            newGrades[student.id][moduleName].t3 = null;
+            newGrades[student.id][moduleName].rec = null;
+        }
+        
+        return newGrades;
+    });
+    addToast('Estado de convalidación actualizado.', 'success');
   };
   
    const studentServicesData = useMemo(() => {
@@ -436,10 +459,11 @@ const FichaAlumno: React.FC<FichaAlumnoProps> = ({ student, onBack, onUpdatePhot
                     <h3 className="text-lg font-bold text-gray-800 p-4 border-b">Resumen de Otros Módulos</h3>
                      <div className="overflow-x-auto">
                            <table className="min-w-full text-sm text-center">
-                                <thead className="bg-gray-50 text-xs text-gray-600 uppercase"><tr><th className="px-4 py-3 text-left">Módulo</th><th>T1</th><th>T2</th><th>T3</th><th>REC</th><th className="px-4 py-3">Media Final</th></tr></thead>
+                                <thead className="bg-gray-50 text-xs text-gray-600 uppercase"><tr><th className="px-4 py-3 text-left">Módulo</th><th>T1</th><th>T2</th><th>T3</th><th>REC</th><th className="px-4 py-3">Media Final</th><th className="px-4 py-3">Acción</th></tr></thead>
                                 <tbody className="[&>tr:nth-child(even)]:bg-gray-50">
                                     {COURSE_MODULES.map(mod => {
                                         const isSostenibilidad = mod.name === 'Sostenibilidad aplicada al sistema productivo';
+                                        const isConvalidated = allCourseGrades[student.id]?.[mod.name]?.isConvalidated;
                                         
                                         const grades = isSostenibilidad 
                                             ? sostenibilidadAverages 
@@ -458,11 +482,27 @@ const FichaAlumno: React.FC<FichaAlumnoProps> = ({ student, onBack, onUpdatePhot
                                         return (
                                             <tr key={mod.name}>
                                                 <td className="px-4 py-2 text-left font-medium">{mod.name}</td>
-                                                <td>{grades.t1 !== null && grades.t1 !== undefined ? grades.t1.toFixed(2) : '-'}</td>
-                                                <td>{grades.t2 !== null && grades.t2 !== undefined ? grades.t2.toFixed(2) : '-'}</td>
-                                                <td>{mod.trimesters === 3 ? ((grades as any).t3 ?? '-') : <span className="text-gray-400">N/A</span>}</td>
-                                                <td>{(grades as any).rec ?? '-'}</td>
-                                                <td className={`font-bold ${finalAvg !== null && finalAvg < 5 ? 'text-red-600' : ''}`}>{finalAvg?.toFixed(2) ?? '-'}</td>
+                                                {isConvalidated ? (
+                                                    <>
+                                                        <td colSpan={5} className="text-center font-bold text-green-600 bg-green-50">CONVALIDADA</td>
+                                                        <td className="px-4 py-2 text-center">
+                                                            <button onClick={() => handleToggleConvalidation(mod.name)} className="text-xs text-gray-500 hover:text-red-600">Anular</button>
+                                                        </td>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <td>{grades.t1 !== null && grades.t1 !== undefined ? grades.t1.toFixed(2) : '-'}</td>
+                                                        <td>{grades.t2 !== null && grades.t2 !== undefined ? grades.t2.toFixed(2) : '-'}</td>
+                                                        <td>{mod.trimesters === 3 ? ((grades as any).t3 ?? '-') : <span className="text-gray-400">N/A</span>}</td>
+                                                        <td>{(grades as any).rec ?? '-'}</td>
+                                                        <td className={`font-bold ${finalAvg !== null && finalAvg < 5 ? 'text-red-600' : ''}`}>{finalAvg?.toFixed(2) ?? '-'}</td>
+                                                        <td className="px-4 py-2 text-center">
+                                                          {!isSostenibilidad && (
+                                                            <button onClick={() => handleToggleConvalidation(mod.name)} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200">Convalidar</button>
+                                                          )}
+                                                        </td>
+                                                    </>
+                                                )}
                                             </tr>
                                         );
                                     })}
