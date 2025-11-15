@@ -71,9 +71,9 @@ const OptativoView: React.FC = () => {
                 <div>
                     <h1 className="text-3xl font-bold text-gray-800 flex items-center">
                         <FileSpreadsheetIcon className="w-8 h-8 mr-3 text-blue-500" />
-                        Módulo Optativo: Sostenibilidad
+                        Módulo: Sostenibilidad Aplicada
                     </h1>
-                    <p className="text-gray-500 mt-1">Gestiona los exámenes y calificaciones para el módulo optativo.</p>
+                    <p className="text-gray-500 mt-1">Gestiona los exámenes y calificaciones para el módulo de Sostenibilidad.</p>
                 </div>
                 <div className="flex items-center space-x-2">
                     <button onClick={() => handleAddExam('t1')} className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition"><PlusIcon className="w-5 h-5 mr-1" />Añadir Examen T1</button>

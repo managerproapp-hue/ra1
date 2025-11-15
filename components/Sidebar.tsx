@@ -123,7 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
           />
           <NavLink
             icon={FileSpreadsheetIcon}
-            label="Módulo Optativo"
+            label="Sostenibilidad"
             isActive={activeView === 'optativo'}
             onClick={() => setActiveView('optativo')}
             isCollapsed={isCollapsed}
